@@ -12,7 +12,7 @@ https://dbdiagram.io/d/Amartha-Loan-69c95965fb2db18e3b2e3c69
 - [Atlas](https://atlasgo.io/docs#installation)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
-## Setup
+### Setup
 - Spin up dependencies with docker-compose
   ```
   make docker-dep
@@ -23,7 +23,7 @@ https://dbdiagram.io/d/Amartha-Loan-69c95965fb2db18e3b2e3c69
   make db-migrate
   ```
 
-## Local development using docker-compose
+### Local development using docker-compose
 
 We provide `docker-compose.yaml` file to hold the non service dependencies of backend such as MySQL. To spin up the dependencies, you can do the following steps.
 
@@ -34,7 +34,7 @@ We provide `docker-compose.yaml` file to hold the non service dependencies of ba
   make docker-dep
   ```
 
-## Database Migration
+### Database Migration
 
 - Create new migration
   ```sh
@@ -52,3 +52,12 @@ We provide `docker-compose.yaml` file to hold the non service dependencies of ba
   ```sh
   atlas migrate down -u "mysql://$(db_username):$(db_password)@$(db_host):$(db_port)/$(db_name)" --dir file://$(migration_dir) --to-version $(version) --dev-url "docker://mysql/8/example"
   ```
+
+### Generate Mock
+
+example generate mock Interface
+```
+mockgen -destination=mock/user_repository.go -package=mock example.com/loan/module/user/internal/repository UserRepository
+
+mockgen -destination=mock/user_usecase.go -package=mock example.com/loan/module/user/internal/usecase UserUsecase
+```

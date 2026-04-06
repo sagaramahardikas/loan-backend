@@ -1,6 +1,8 @@
 package config
 
 import (
+	"database/sql"
+	"fmt"
 	"net/http"
 
 	"example.com/loan/module/user/internal/handler"
@@ -8,18 +10,16 @@ import (
 	"example.com/loan/module/user/internal/usecase"
 )
 
-func RegisterUserGatewayHandler(mux *http.ServeMux) error {
-	cfg, err := loadConfig()
-	if err != nil {
-		return err
+type UserConfig struct {
+	Database *sql.DB
+}
+
+func RegisterUserGatewayHandler(mux *http.ServeMux, cfg UserConfig) error {
+	if cfg.Database == nil {
+		return fmt.Errorf("database is not initialized")
 	}
 
-	db, err := initializeDatabase(cfg)
-	if err != nil {
-		return err
-	}
-
-	userRepo := repository.NewUserRepository(db)
+	userRepo := repository.NewUserRepository(cfg.Database)
 	userUsecase := usecase.NewUserUsecase(userRepo)
 	userHandler := handler.NewUserHandler(userUsecase)
 	// Check Latest User Data (isDelinquent could be check in here through user status)

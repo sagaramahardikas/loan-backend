@@ -1,0 +1,36 @@
+package handler
+
+import (
+	"context"
+	"encoding/json"
+	"net/http"
+
+	"example.com/loan/module/loan/internal/usecase"
+)
+
+type LoanHandler struct {
+	usecase usecase.LoanUsecase
+}
+
+func (h *LoanHandler) GetOutstandingLoans() func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		response, err := h.usecase.GetOutstandingLoans(context.Background(), id)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
+func NewLoanHandler(usecase usecase.LoanUsecase) *LoanHandler {
+	return &LoanHandler{
+		usecase: usecase,
+	}
+}

@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"os"
 
-	"example.com/loan/module/user/config"
+	loanConfig "example.com/loan/module/loan/config"
+	usrConfig "example.com/loan/module/user/config"
 )
 
 func main() {
@@ -24,7 +25,31 @@ func main() {
 }
 
 func RegisterGatewayHandler(mux *http.ServeMux) error {
-	err := config.RegisterUserGatewayHandler(mux)
+	serviceConfig, err := loadConfig()
+	if err != nil {
+		return err
+	}
 
-	return err
+	db, err := initializeDatabase(serviceConfig)
+	if err != nil {
+		return err
+	}
+
+	userCfg := usrConfig.UserConfig{
+		Database: db,
+	}
+	err = usrConfig.RegisterUserGatewayHandler(mux, userCfg)
+	if err != nil {
+		return err
+	}
+
+	loanCfg := loanConfig.LoanConfig{
+		Database: db,
+	}
+	err = loanConfig.RegisterLoanGatewayHandler(mux, loanCfg)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

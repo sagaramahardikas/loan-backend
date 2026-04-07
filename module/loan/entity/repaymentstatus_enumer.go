@@ -7,11 +7,11 @@ import (
 	"strings"
 )
 
-const _RepaymentStatusName = "unspecifiedcreatedpaid"
+const _RepaymentStatusName = "unspecifiedcreatedpaidfailedsuccess"
 
-var _RepaymentStatusIndex = [...]uint8{0, 11, 18, 22}
+var _RepaymentStatusIndex = [...]uint8{0, 11, 18, 22, 28, 35}
 
-const _RepaymentStatusLowerName = "unspecifiedcreatedpaid"
+const _RepaymentStatusLowerName = "unspecifiedcreatedpaidfailedsuccess"
 
 func (i RepaymentStatus) String() string {
 	if i < 0 || i >= RepaymentStatus(len(_RepaymentStatusIndex)-1) {
@@ -27,9 +27,11 @@ func _RepaymentStatusNoOp() {
 	_ = x[RepaymentStatusUnspecified-(0)]
 	_ = x[RepaymentStatusCreated-(1)]
 	_ = x[RepaymentStatusPaid-(2)]
+	_ = x[RepaymentStatusFailed-(3)]
+	_ = x[RepaymentStatusSuccess-(4)]
 }
 
-var _RepaymentStatusValues = []RepaymentStatus{RepaymentStatusUnspecified, RepaymentStatusCreated, RepaymentStatusPaid}
+var _RepaymentStatusValues = []RepaymentStatus{RepaymentStatusUnspecified, RepaymentStatusCreated, RepaymentStatusPaid, RepaymentStatusFailed, RepaymentStatusSuccess}
 
 var _RepaymentStatusNameToValueMap = map[string]RepaymentStatus{
 	_RepaymentStatusName[0:11]:       RepaymentStatusUnspecified,
@@ -38,12 +40,18 @@ var _RepaymentStatusNameToValueMap = map[string]RepaymentStatus{
 	_RepaymentStatusLowerName[11:18]: RepaymentStatusCreated,
 	_RepaymentStatusName[18:22]:      RepaymentStatusPaid,
 	_RepaymentStatusLowerName[18:22]: RepaymentStatusPaid,
+	_RepaymentStatusName[22:28]:      RepaymentStatusFailed,
+	_RepaymentStatusLowerName[22:28]: RepaymentStatusFailed,
+	_RepaymentStatusName[28:35]:      RepaymentStatusSuccess,
+	_RepaymentStatusLowerName[28:35]: RepaymentStatusSuccess,
 }
 
 var _RepaymentStatusNames = []string{
 	_RepaymentStatusName[0:11],
 	_RepaymentStatusName[11:18],
 	_RepaymentStatusName[18:22],
+	_RepaymentStatusName[22:28],
+	_RepaymentStatusName[28:35],
 }
 
 // RepaymentStatusString retrieves an enum value from the enum constants string name.

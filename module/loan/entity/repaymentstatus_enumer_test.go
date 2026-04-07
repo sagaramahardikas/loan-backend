@@ -32,6 +32,18 @@ func TestRepaymentStatusString(t *testing.T) {
 			valid:    true,
 		},
 		{
+			name:     "repayment status failed",
+			input:    "failed",
+			expected: RepaymentStatusFailed,
+			valid:    true,
+		},
+		{
+			name:     "repayment status success",
+			input:    "success",
+			expected: RepaymentStatusSuccess,
+			valid:    true,
+		},
+		{
 			name:  "invalid",
 			input: "invalid",
 			valid: false,
@@ -77,6 +89,18 @@ func TestRepaymentStatus_String(t *testing.T) {
 			valid:    true,
 		},
 		{
+			name:     "repayment status failed",
+			input:    RepaymentStatusFailed,
+			expected: "failed",
+			valid:    true,
+		},
+		{
+			name:     "repayment status success",
+			input:    RepaymentStatusSuccess,
+			expected: "success",
+			valid:    true,
+		},
+		{
 			name:     "invalid",
 			input:    RepaymentStatus(99),
 			expected: "RepaymentStatus(99)",
@@ -97,6 +121,8 @@ func TestRepaymentStatusValues(t *testing.T) {
 		RepaymentStatusUnspecified,
 		RepaymentStatusCreated,
 		RepaymentStatusPaid,
+		RepaymentStatusFailed,
+		RepaymentStatusSuccess,
 	})
 }
 
@@ -115,6 +141,8 @@ func TestRepaymentStatusStrings(t *testing.T) {
 				"unspecified",
 				"created",
 				"paid",
+				"failed",
+				"success",
 			},
 		},
 	}

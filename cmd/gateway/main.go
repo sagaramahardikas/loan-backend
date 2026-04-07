@@ -44,9 +44,13 @@ func RegisterGatewayHandler(mux *http.ServeMux) error {
 		return err
 	}
 
-	loanCfg := loanConfig.LoanConfig{
-		Database: db,
+	loanCfg := loanConfig.LoanConfig{Database: db}
+
+	err = LoadLoanConfig(&loanCfg)
+	if err != nil {
+		return err
 	}
+
 	err = loanConfig.RegisterLoanGatewayHandler(mux, loanCfg)
 	if err != nil {
 		return err

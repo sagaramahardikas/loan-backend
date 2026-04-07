@@ -1,4 +1,4 @@
-.PHONY: lint lint-fix dev-dep dep test cobertura docker-dep db-migrate db-rollback
+.PHONY: lint lint-fix dev-dep dep test cobertura docker-dep db-migrate db-rollback start-server
 
 lint:
 	go fmt ./...
@@ -24,3 +24,6 @@ db-migrate:
 
 db-rollback:
 	atlas migrate down -u "mysql://$(db_username):$(db_password)@$(db_host):$(db_port)/$(db_name)" --dir file://$(migration_dir) --to-version $(version) --dev-url "docker://mysql/8/example"
+
+build-and-run-server:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build ./cmd/gateway && ./gateway

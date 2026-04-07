@@ -6,6 +6,7 @@ import (
 	"os"
 
 	loanConfig "example.com/loan/module/loan/config"
+	paymentConfig "example.com/loan/module/payment/config"
 	usrConfig "example.com/loan/module/user/config"
 )
 
@@ -25,12 +26,12 @@ func main() {
 }
 
 func RegisterGatewayHandler(mux *http.ServeMux) error {
-	serviceConfig, err := loadConfig()
+	serviceConfig, err := LoadConfig()
 	if err != nil {
 		return err
 	}
 
-	db, err := initializeDatabase(serviceConfig)
+	db, err := InitializeDatabase(serviceConfig)
 	if err != nil {
 		return err
 	}
@@ -47,6 +48,14 @@ func RegisterGatewayHandler(mux *http.ServeMux) error {
 		Database: db,
 	}
 	err = loanConfig.RegisterLoanGatewayHandler(mux, loanCfg)
+	if err != nil {
+		return err
+	}
+
+	paymentCfg := paymentConfig.PaymentConfig{
+		Database: db,
+	}
+	err = paymentConfig.RegisterPaymentGatewayHandler(mux, paymentCfg)
 	if err != nil {
 		return err
 	}

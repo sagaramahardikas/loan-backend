@@ -8,6 +8,8 @@ import (
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/subosito/gotenv"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type ServiceConfig struct {
@@ -29,7 +31,7 @@ type DatabaseConfig struct {
 	MaxConnLifetime time.Duration `envconfig:"MAX_CONNECTION_LIFETIME" default:"5m"`
 }
 
-func loadConfig() (ServiceConfig, error) {
+func LoadConfig() (ServiceConfig, error) {
 	var cfg ServiceConfig
 
 	// load from .env if exists
@@ -45,7 +47,7 @@ func loadConfig() (ServiceConfig, error) {
 	return cfg, err
 }
 
-func initializeDatabase(cfg ServiceConfig) (*sql.DB, error) {
+func InitializeDatabase(cfg ServiceConfig) (*sql.DB, error) {
 	dbCfg := cfg.DatabaseConfig
 	query := dbCfg.QueryString
 	if query == "" {

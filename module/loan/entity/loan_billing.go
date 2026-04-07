@@ -11,6 +11,12 @@ type GetOutstandingLoansResponse struct {
 	TotalBillingCount      int             `json:"total_billing_count"`
 }
 
+type PayBillingRequest struct {
+	UserID    string          `json:"user_id"`
+	BillingID string          `json:"billing_id"`
+	Amount    decimal.Decimal `json:"amount"`
+}
+
 //go:generate enumer -type=LoanBillingStatus -trimprefix=LoanBillingStatus -transform=kebab
 type LoanBillingStatus int8
 

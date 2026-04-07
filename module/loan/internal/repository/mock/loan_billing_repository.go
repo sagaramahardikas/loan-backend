@@ -41,6 +41,21 @@ func (m *MockLoanBillingRepository) EXPECT() *MockLoanBillingRepositoryMockRecor
 	return m.recorder
 }
 
+// GetByID mocks base method.
+func (m *MockLoanBillingRepository) GetByID(ctx context.Context, billingID string) (entity.LoanBilling, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByID", ctx, billingID)
+	ret0, _ := ret[0].(entity.LoanBilling)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByID indicates an expected call of GetByID.
+func (mr *MockLoanBillingRepositoryMockRecorder) GetByID(ctx, billingID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockLoanBillingRepository)(nil).GetByID), ctx, billingID)
+}
+
 // SumOutstandingLoans mocks base method.
 func (m *MockLoanBillingRepository) SumOutstandingLoans(ctx context.Context, loanID string) (entity.GetOutstandingLoansResponse, error) {
 	m.ctrl.T.Helper()
@@ -54,4 +69,18 @@ func (m *MockLoanBillingRepository) SumOutstandingLoans(ctx context.Context, loa
 func (mr *MockLoanBillingRepositoryMockRecorder) SumOutstandingLoans(ctx, loanID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SumOutstandingLoans", reflect.TypeOf((*MockLoanBillingRepository)(nil).SumOutstandingLoans), ctx, loanID)
+}
+
+// Update mocks base method.
+func (m *MockLoanBillingRepository) Update(ctx context.Context, billing entity.LoanBilling) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, billing)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockLoanBillingRepositoryMockRecorder) Update(ctx, billing any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockLoanBillingRepository)(nil).Update), ctx, billing)
 }

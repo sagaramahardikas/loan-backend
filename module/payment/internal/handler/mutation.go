@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"example.com/loan/module/payment/entity"
@@ -16,15 +15,14 @@ type MutationHandler struct {
 
 func (h *MutationHandler) CreateAndPayMutation() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var mutation entity.Mutation
-		if err := json.NewDecoder(r.Body).Decode(&mutation); err != nil {
+		var debitReq entity.DebitRequest
+		if err := json.NewDecoder(r.Body).Decode(&debitReq); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		fmt.Println(mutation)
-		mutation.Type = entity.MutationTypeRepayment
-		response, err := h.usecase.Debit(context.Background(), mutation)
+		debitReq.Type = entity.MutationTypeRepayment
+		response, err := h.usecase.Debit(context.Background(), debitReq)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

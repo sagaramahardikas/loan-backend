@@ -55,3 +55,18 @@ func (mr *MockLoanUsecaseMockRecorder) GetOutstandingLoans(ctx, loanID any) *gom
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOutstandingLoans", reflect.TypeOf((*MockLoanUsecase)(nil).GetOutstandingLoans), ctx, loanID)
 }
+
+// PayBilling mocks base method.
+func (m *MockLoanUsecase) PayBilling(ctx context.Context, req entity.PayBillingRequest) (entity.LoanBilling, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PayBilling", ctx, req)
+	ret0, _ := ret[0].(entity.LoanBilling)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PayBilling indicates an expected call of PayBilling.
+func (mr *MockLoanUsecaseMockRecorder) PayBilling(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PayBilling", reflect.TypeOf((*MockLoanUsecase)(nil).PayBilling), ctx, req)
+}

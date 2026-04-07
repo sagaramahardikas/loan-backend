@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	loanConfig "example.com/loan/module/loan/config"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/subosito/gotenv"
 
@@ -45,6 +46,10 @@ func LoadConfig() (ServiceConfig, error) {
 	// to prevent conflict with another modules
 	err := envconfig.Process("service", &cfg)
 	return cfg, err
+}
+
+func LoadLoanConfig(cfg *loanConfig.LoanConfig) error {
+	return envconfig.Process("loan", cfg)
 }
 
 func InitializeDatabase(cfg ServiceConfig) (*sql.DB, error) {

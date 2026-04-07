@@ -42,16 +42,16 @@ func (m *MockMutationUsecase) EXPECT() *MockMutationUsecaseMockRecorder {
 }
 
 // Debit mocks base method.
-func (m *MockMutationUsecase) Debit(ctx context.Context, mutation entity.Mutation) (entity.Mutation, error) {
+func (m *MockMutationUsecase) Debit(ctx context.Context, req entity.DebitRequest) (entity.Mutation, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Debit", ctx, mutation)
+	ret := m.ctrl.Call(m, "Debit", ctx, req)
 	ret0, _ := ret[0].(entity.Mutation)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Debit indicates an expected call of Debit.
-func (mr *MockMutationUsecaseMockRecorder) Debit(ctx, mutation any) *gomock.Call {
+func (mr *MockMutationUsecaseMockRecorder) Debit(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Debit", reflect.TypeOf((*MockMutationUsecase)(nil).Debit), ctx, mutation)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Debit", reflect.TypeOf((*MockMutationUsecase)(nil).Debit), ctx, req)
 }

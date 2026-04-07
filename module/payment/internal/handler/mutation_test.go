@@ -24,22 +24,22 @@ type mockMutationHandler struct {
 func TestMutationHandler_Debit(t *testing.T) {
 	testCases := []struct {
 		name           string
-		input          entity.Mutation
+		input          entity.DebitRequest
 		mockFn         func(mock *mockMutationHandler)
 		expectedResult string
 	}{
 		{
 			name: "error: usecase error",
-			input: entity.Mutation{
-				AccountID: "123",
+			input: entity.DebitRequest{
+				UserID:    "123",
 				Amount:    decimal.NewFromInt(10000),
 				Type:      entity.MutationTypeRepayment,
 				Reference: "ref-1",
 			},
 			mockFn: func(mocks *mockMutationHandler) {
 				mocks.usecase.EXPECT().Debit(
-					gomock.Any(), entity.Mutation{
-						AccountID: "123",
+					gomock.Any(), entity.DebitRequest{
+						UserID:    "123",
 						Amount:    decimal.NewFromInt(10000),
 						Type:      entity.MutationTypeRepayment,
 						Reference: "ref-1",
@@ -50,16 +50,16 @@ func TestMutationHandler_Debit(t *testing.T) {
 		},
 		{
 			name: "success: create and pay mutation",
-			input: entity.Mutation{
-				AccountID: "123",
+			input: entity.DebitRequest{
+				UserID:    "123",
 				Amount:    decimal.NewFromInt(10000),
 				Type:      entity.MutationTypeRepayment,
 				Reference: "ref-1",
 			},
 			mockFn: func(mocks *mockMutationHandler) {
 				mocks.usecase.EXPECT().Debit(
-					gomock.Any(), entity.Mutation{
-						AccountID: "123",
+					gomock.Any(), entity.DebitRequest{
+						UserID:    "123",
 						Amount:    decimal.NewFromInt(10000),
 						Type:      entity.MutationTypeRepayment,
 						Reference: "ref-1",

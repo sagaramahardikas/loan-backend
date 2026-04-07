@@ -23,15 +23,15 @@ func TestMutationUsecase_Debit(t *testing.T) {
 
 	testCases := []struct {
 		name             string
-		inpMutation      entity.Mutation
+		inpMutation      entity.DebitRequest
 		mockFn           func(mock *mockMutationUsecase)
 		expectedMutation entity.Mutation
 		expectedErr      error
 	}{
 		{
 			name: "error: account not found",
-			inpMutation: entity.Mutation{
-				AccountID: "1",
+			inpMutation: entity.DebitRequest{
+				UserID: "1",
 			},
 			mockFn: func(mocks *mockMutationUsecase) {
 				mocks.accountRepo.EXPECT().GetByUserID(
@@ -42,8 +42,8 @@ func TestMutationUsecase_Debit(t *testing.T) {
 		},
 		{
 			name: "error: account is not active",
-			inpMutation: entity.Mutation{
-				AccountID: "1",
+			inpMutation: entity.DebitRequest{
+				UserID: "1",
 			},
 			mockFn: func(mocks *mockMutationUsecase) {
 				mocks.accountRepo.EXPECT().GetByUserID(
@@ -54,8 +54,8 @@ func TestMutationUsecase_Debit(t *testing.T) {
 		},
 		{
 			name: "error: get mutation error",
-			inpMutation: entity.Mutation{
-				AccountID: "1",
+			inpMutation: entity.DebitRequest{
+				UserID:    "1",
 				Type:      entity.MutationTypeRepayment,
 				Reference: "ref-1",
 			},
@@ -72,8 +72,8 @@ func TestMutationUsecase_Debit(t *testing.T) {
 		},
 		{
 			name: "success: mutation already exist",
-			inpMutation: entity.Mutation{
-				AccountID: "1",
+			inpMutation: entity.DebitRequest{
+				UserID:    "1",
 				Type:      entity.MutationTypeRepayment,
 				Reference: "ref-1",
 			},
@@ -90,8 +90,8 @@ func TestMutationUsecase_Debit(t *testing.T) {
 		},
 		{
 			name: "error: insufficient balance",
-			inpMutation: entity.Mutation{
-				AccountID: "1",
+			inpMutation: entity.DebitRequest{
+				UserID:    "1",
 				Amount:    decimal.NewFromInt(20000),
 				Type:      entity.MutationTypeRepayment,
 				Reference: "ref-1",
@@ -109,8 +109,8 @@ func TestMutationUsecase_Debit(t *testing.T) {
 		},
 		{
 			name: "error: update account error",
-			inpMutation: entity.Mutation{
-				AccountID: "1",
+			inpMutation: entity.DebitRequest{
+				UserID:    "1",
 				Amount:    decimal.NewFromInt(20000),
 				Type:      entity.MutationTypeRepayment,
 				Reference: "ref-1",
@@ -132,8 +132,8 @@ func TestMutationUsecase_Debit(t *testing.T) {
 		},
 		{
 			name: "error: create mutation error",
-			inpMutation: entity.Mutation{
-				AccountID: "1",
+			inpMutation: entity.DebitRequest{
+				UserID:    "1",
 				Amount:    decimal.NewFromInt(20000),
 				Type:      entity.MutationTypeRepayment,
 				Reference: "ref-1",
@@ -159,8 +159,8 @@ func TestMutationUsecase_Debit(t *testing.T) {
 		},
 		{
 			name: "success: debit",
-			inpMutation: entity.Mutation{
-				AccountID: "1",
+			inpMutation: entity.DebitRequest{
+				UserID:    "1",
 				Amount:    decimal.NewFromInt(20000),
 				Type:      entity.MutationTypeRepayment,
 				Reference: "ref-1",

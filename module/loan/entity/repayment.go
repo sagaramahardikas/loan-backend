@@ -9,6 +9,8 @@ const (
 	RepaymentStatusUnspecified RepaymentStatus = iota
 	RepaymentStatusCreated
 	RepaymentStatusPaid
+	RepaymentStatusFailed
+	RepaymentStatusSuccess
 )
 
 type Repayment struct {

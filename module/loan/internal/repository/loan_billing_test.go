@@ -2,9 +2,11 @@ package repository_test
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"regexp"
 	"testing"
+	"time"
 
 	"example.com/loan/module/loan/entity"
 	"example.com/loan/module/loan/internal/repository"
@@ -12,6 +14,73 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestLoanBillingRepository_GetByID(t *testing.T) {
+	fixedDate := time.Date(2024, 6, 30, 0, 0, 0, 0, time.UTC)
+
+	testCases := []struct {
+		name        string
+		id          string
+		dbGetError  error
+		expectedObj entity.LoanBilling
+		expectedErr error
+	}{
+		{
+			name:        "error: not found",
+			id:          "123",
+			dbGetError:  sql.ErrNoRows,
+			expectedErr: sql.ErrNoRows,
+		},
+		{
+			name:        "error: db connection error",
+			id:          "123",
+			dbGetError:  errors.New("db connection error"),
+			expectedErr: errors.New("db connection error"),
+		},
+		{
+			name: "success: found",
+			id:   "123",
+			expectedObj: entity.LoanBilling{
+				ID:      "123",
+				LoanID:  "123",
+				Amount:  decimal.NewFromInt(10000),
+				Status:  entity.LoanBillingStatusPaid,
+				DueDate: fixedDate,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.Nil(t, err)
+			repo := repository.NewLoanBillingRepository(db)
+			rows := mock.NewRows([]string{"id", "loan_id", "amount", "status", "due_date"})
+			if tc.expectedErr == nil {
+				rows.AddRow(
+					tc.expectedObj.ID,
+					tc.expectedObj.LoanID,
+					tc.expectedObj.Amount,
+					tc.expectedObj.Status,
+					tc.expectedObj.DueDate,
+				)
+			}
+
+			mock.ExpectQuery(regexp.QuoteMeta("SELECT id, loan_id, amount, status, due_date FROM loan_billings WHERE id = ?")).
+				WithArgs(tc.id).
+				WillReturnRows(rows).
+				WillReturnError(tc.dbGetError)
+
+			got, err := repo.GetByID(context.Background(), tc.id)
+			if err != nil {
+				assert.Equal(t, tc.expectedErr, err)
+				return
+			}
+
+			assert.Equal(t, tc.expectedObj, got)
+		})
+	}
+}
 
 func TestLoanBillingRepository_SumOutstandingLoans(t *testing.T) {
 	testCases := []struct {
@@ -62,6 +131,48 @@ func TestLoanBillingRepository_SumOutstandingLoans(t *testing.T) {
 			}
 
 			assert.Equal(t, tc.expectedObj, got)
+		})
+	}
+}
+
+func TestLoanBillingRepository_Update(t *testing.T) {
+	testCases := []struct {
+		name        string
+		inpObj      entity.LoanBilling
+		dbExecError error
+		expectedErr error
+	}{
+		{
+			name:        "error: db connection error",
+			inpObj:      entity.LoanBilling{ID: "1", LoanID: "1", Amount: decimal.NewFromInt(10000), Status: entity.LoanBillingStatusPaid, DueDate: time.Now()},
+			dbExecError: errors.New("db connection error"),
+			expectedErr: errors.New("db connection error"),
+		},
+		{
+			name:   "success: updated",
+			inpObj: entity.LoanBilling{ID: "1", LoanID: "1", Amount: decimal.NewFromInt(10000), Status: entity.LoanBillingStatusPaid, DueDate: time.Now()},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.Nil(t, err)
+
+			repo := repository.NewLoanBillingRepository(db)
+			mock.ExpectExec(regexp.QuoteMeta("UPDATE loan_billings SET amount = ?, status = ?, due_date = ?, updated_at = ? WHERE id = ?")).
+				WithArgs(
+					tc.inpObj.Amount,
+					tc.inpObj.Status,
+					tc.inpObj.DueDate,
+					sqlmock.AnyArg(),
+					tc.inpObj.ID,
+				).
+				WillReturnResult(sqlmock.NewResult(0, 1)).
+				WillReturnError(tc.dbExecError)
+
+			err = repo.Update(context.Background(), tc.inpObj)
+			assert.Equal(t, tc.expectedErr, err)
 		})
 	}
 }

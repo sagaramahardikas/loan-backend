@@ -29,6 +29,7 @@ const (
 
 type LoanBilling struct {
 	ID      string            `json:"id"`
+	UserID  string            `json:"user_id,omitempty"` // joined from loans
 	LoanID  string            `json:"loan_id"`
 	Amount  decimal.Decimal   `json:"amount"`
 	Status  LoanBillingStatus `json:"status"`

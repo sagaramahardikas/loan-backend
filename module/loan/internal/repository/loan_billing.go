@@ -18,6 +18,7 @@ type LoanBillingRepository interface {
 	SumOutstandingLoans(ctx context.Context, loanID string) (entity.GetOutstandingLoansResponse, error)
 	Update(ctx context.Context, billing entity.LoanBilling) error
 	BulkCreate(ctx context.Context, billings []entity.LoanBilling) error
+	OverdueBillings(ctx context.Context) ([]entity.LoanBilling, error)
 }
 
 func (r *loanBillingRepository) GetByID(ctx context.Context, billingID string) (entity.LoanBilling, error) {
@@ -112,12 +113,73 @@ func (r *loanBillingRepository) BulkCreate(ctx context.Context, billings []entit
 	return err
 }
 
+func (r *loanBillingRepository) OverdueBillings(ctx context.Context) ([]entity.LoanBilling, error) {
+	billings := []entity.LoanBilling{}
+	gmt7 := time.FixedZone("GMT+7", 7*60*60)
+	now := time.Now().In(gmt7)
+
+	query := sq.Select(
+		"lb.id",
+		"lb.loan_id",
+		"l.user_id",
+		"lb.amount",
+		"lb.status",
+		"lb.due_date",
+	).From("loan_billings lb").Join("loans l ON lb.loan_id = l.id").Where(
+		sq.And{
+			sq.Lt{"lb.due_date": now},
+			sq.NotEq{"lb.status": entity.LoanBillingStatusPaid},
+		},
+	)
+
+	rows, err := query.RunWith(r.db).QueryContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		billing, err := scanLoanBillingAndLoan(rows)
+		if err != nil {
+			return nil, err
+		}
+		billings = append(billings, billing)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return billings, nil
+}
+
 func scanLoanBilling(row sq.RowScanner) (entity.LoanBilling, error) {
 	var billing entity.LoanBilling
 
 	if err := row.Scan(
 		&billing.ID,
 		&billing.LoanID,
+		&billing.Amount,
+		&billing.Status,
+		&billing.DueDate,
+	); err != nil {
+		if err == sql.ErrNoRows {
+			return entity.LoanBilling{}, nil
+		}
+
+		return entity.LoanBilling{}, err
+	}
+
+	return billing, nil
+}
+
+func scanLoanBillingAndLoan(row sq.RowScanner) (entity.LoanBilling, error) {
+	var billing entity.LoanBilling
+
+	if err := row.Scan(
+		&billing.ID,
+		&billing.LoanID,
+		&billing.UserID,
 		&billing.Amount,
 		&billing.Status,
 		&billing.DueDate,

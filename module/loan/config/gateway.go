@@ -15,6 +15,7 @@ type LoanConfig struct {
 	Database *sql.DB
 
 	PaymentServiceAddress string `env:"PAYMENT_SERVICE_ADDRESS" default:"http://localhost:8888"`
+	UserServiceAddress    string `env:"USER_SERVICE_ADDRESS" default:"http://localhost:8888"`
 }
 
 func RegisterLoanGatewayHandler(mux *http.ServeMux, cfg LoanConfig) error {

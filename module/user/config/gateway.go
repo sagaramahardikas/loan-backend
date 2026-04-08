@@ -24,6 +24,7 @@ func RegisterUserGatewayHandler(mux *http.ServeMux, cfg UserConfig) error {
 	userHandler := handler.NewUserHandler(userUsecase)
 	// Check Latest User Data (isDelinquent could be check in here through user status)
 	mux.HandleFunc("/users/{id}", userHandler.GetUser())
+	mux.HandleFunc("PUT /internal/user/{id}", userHandler.UpdateUser())
 
 	return nil
 }

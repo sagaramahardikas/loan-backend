@@ -122,3 +122,43 @@ func TestUserRepository_Create(t *testing.T) {
 		})
 	}
 }
+
+func TestUserRepository_Update(t *testing.T) {
+	testCases := []struct {
+		name        string
+		inpUser     entity.User
+		dbExecError error
+		expectedErr error
+	}{
+		{
+			name:        "error: db connection error",
+			inpUser:     entity.User{ID: "1", Username: "testuser", Status: entity.UserStatusActive},
+			dbExecError: errors.New("db connection error"),
+			expectedErr: errors.New("db connection error"),
+		},
+		{
+			name:    "success: updated",
+			inpUser: entity.User{ID: "1", Username: "testuser", Status: entity.UserStatusActive},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.Nil(t, err)
+
+			repo := repository.NewUserRepository(db)
+			mock.ExpectExec(regexp.QuoteMeta("UPDATE users SET status = ?, updated_at = ? WHERE id = ?")).
+				WithArgs(
+					tc.inpUser.Status,
+					sqlmock.AnyArg(),
+					tc.inpUser.ID,
+				).
+				WillReturnResult(sqlmock.NewResult(0, 1)).
+				WillReturnError(tc.dbExecError)
+
+			err = repo.Update(context.Background(), tc.inpUser)
+			assert.Equal(t, tc.expectedErr, err)
+		})
+	}
+}

@@ -262,3 +262,75 @@ func TestLoanBillingRepository_BulkCreate(t *testing.T) {
 		})
 	}
 }
+
+func TestLoanBillingRepository_OverdueBillings(t *testing.T) {
+	fixedDate := time.Date(2024, 6, 30, 0, 0, 0, 0, time.UTC)
+
+	testCases := []struct {
+		name        string
+		dbListError error
+		expectedObj []entity.LoanBilling
+		expectedErr error
+	}{
+		{
+			name:        "error: db connection error",
+			dbListError: errors.New("db connection error"),
+			expectedErr: errors.New("db connection error"),
+		},
+		{
+			name: "success: found all overdue billings",
+			expectedObj: []entity.LoanBilling{
+				{
+					ID:      "1",
+					LoanID:  "1",
+					UserID:  "1",
+					Amount:  decimal.NewFromInt(10000),
+					Status:  entity.LoanBillingStatusCreated,
+					DueDate: fixedDate.AddDate(0, 0, -7),
+				},
+				{
+					ID:      "2",
+					LoanID:  "1",
+					UserID:  "1",
+					Amount:  decimal.NewFromInt(10000),
+					Status:  entity.LoanBillingStatusCreated,
+					DueDate: fixedDate.AddDate(0, 0, -14),
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.Nil(t, err)
+			repo := repository.NewLoanBillingRepository(db)
+			rows := mock.NewRows([]string{"id", "loan_id", "user_id", "amount", "status", "due_date"})
+			if tc.expectedErr == nil {
+				for _, billing := range tc.expectedObj {
+					rows.AddRow(
+						billing.ID,
+						billing.LoanID,
+						billing.UserID,
+						billing.Amount,
+						billing.Status,
+						billing.DueDate,
+					)
+				}
+			}
+
+			mock.ExpectQuery(regexp.QuoteMeta("SELECT lb.id, lb.loan_id, l.user_id, lb.amount, lb.status, lb.due_date FROM loan_billings lb JOIN loans l ON lb.loan_id = l.id WHERE (lb.due_date < ? AND lb.status <> ?)")).
+				WithArgs(sqlmock.AnyArg(), entity.LoanBillingStatusPaid).
+				WillReturnRows(rows).
+				WillReturnError(tc.dbListError)
+
+			response, err := repo.OverdueBillings(context.Background())
+			if err != nil {
+				assert.Equal(t, tc.expectedErr, err)
+				return
+			}
+
+			assert.Equal(t, tc.expectedObj, response)
+		})
+	}
+}

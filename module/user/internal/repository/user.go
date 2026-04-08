@@ -17,6 +17,7 @@ type userRepository struct {
 type UserRepository interface {
 	GetByID(ctx context.Context, id string) (entity.User, error)
 	Create(ctx context.Context, user *entity.User) error
+	Update(ctx context.Context, user entity.User) error
 }
 
 func (r *userRepository) GetByID(ctx context.Context, id string) (entity.User, error) {
@@ -63,6 +64,28 @@ func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
 	user.ID = fmt.Sprint(id)
 
 	return nil
+}
+
+func (r *userRepository) Update(ctx context.Context, user entity.User) error {
+	gmt7 := time.FixedZone("GMT+7", 7*60*60)
+	now := time.Now().In(gmt7)
+
+	query := sq.Update("users").
+		Set("status", user.Status).
+		Set("updated_at", now).
+		Where(sq.Eq{"id": user.ID})
+
+	result, err := query.RunWith(r.db).ExecContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	affectedRows, err := result.RowsAffected()
+	if affectedRows == 0 || err != nil {
+		return sql.ErrNoRows
+	}
+
+	return err
 }
 
 func NewUserRepository(db *sql.DB) UserRepository {

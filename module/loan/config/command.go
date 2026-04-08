@@ -2,9 +2,11 @@ package config
 
 import (
 	"fmt"
+	"net/http"
 
 	"example.com/loan/module/loan/internal/repository"
 	"example.com/loan/module/loan/internal/usecase"
+	"example.com/loan/module/user/client"
 )
 
 type CreateLoanDependencies struct {
@@ -39,5 +41,23 @@ func InitializeForceDisburseLoanDependencies(cfg LoanConfig) (*ForceDisburseLoan
 
 	return &ForceDisburseLoanDependencies{
 		Usecase: loanUsecase,
+	}, nil
+}
+
+type OverdueBillingCheckerDependencies struct {
+	Usecase usecase.LoanBillingUsecase
+}
+
+func InitializeOverdueBillingCheckerDependencies(cfg LoanConfig) (*OverdueBillingCheckerDependencies, error) {
+	if cfg.Database == nil {
+		return nil, fmt.Errorf("database is not initialized")
+	}
+
+	loanBillingRepo := repository.NewLoanBillingRepository(cfg.Database)
+	userService := client.NewUserClient(http.DefaultClient, cfg.UserServiceAddress)
+	loanBillingUsecase := usecase.NewLoanBillingUsecase(loanBillingRepo, userService)
+
+	return &OverdueBillingCheckerDependencies{
+		Usecase: loanBillingUsecase,
 	}, nil
 }

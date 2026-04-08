@@ -70,6 +70,21 @@ func (mr *MockLoanBillingRepositoryMockRecorder) GetByID(ctx, billingID any) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockLoanBillingRepository)(nil).GetByID), ctx, billingID)
 }
 
+// OverdueBillings mocks base method.
+func (m *MockLoanBillingRepository) OverdueBillings(ctx context.Context) ([]entity.LoanBilling, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OverdueBillings", ctx)
+	ret0, _ := ret[0].([]entity.LoanBilling)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OverdueBillings indicates an expected call of OverdueBillings.
+func (mr *MockLoanBillingRepositoryMockRecorder) OverdueBillings(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OverdueBillings", reflect.TypeOf((*MockLoanBillingRepository)(nil).OverdueBillings), ctx)
+}
+
 // SumOutstandingLoans mocks base method.
 func (m *MockLoanBillingRepository) SumOutstandingLoans(ctx context.Context, loanID string) (entity.GetOutstandingLoansResponse, error) {
 	m.ctrl.T.Helper()

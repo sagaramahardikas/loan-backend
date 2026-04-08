@@ -123,3 +123,52 @@ func TestUserUsecase_Create(t *testing.T) {
 		})
 	}
 }
+
+func TestUserUsecase_Update(t *testing.T) {
+	user := entity.User{
+		ID:       "1",
+		Username: "testuser",
+		Status:   entity.UserStatusDelinquent,
+	}
+
+	testCases := []struct {
+		name        string
+		input       entity.User
+		mockFn      func(mock *mockUserUsecase)
+		expectedErr error
+	}{
+		{
+			name:  "error: db connection error",
+			input: user,
+			mockFn: func(mocks *mockUserUsecase) {
+				mocks.repository.EXPECT().Update(
+					gomock.Any(), user,
+				).Return(errors.New("db connection error"))
+			},
+			expectedErr: errors.New("db connection error"),
+		},
+		{
+			name:  "success: updated",
+			input: user,
+			mockFn: func(mocks *mockUserUsecase) {
+				mocks.repository.EXPECT().Update(
+					gomock.Any(), user,
+				).Return(nil)
+			},
+		},
+	}
+
+	ctrl := gomock.NewController(t)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mock := &mockUserUsecase{repository: mock.NewMockUserRepository(ctrl)}
+			usecase := usecase.NewUserUsecase(mock.repository)
+			if tc.mockFn != nil {
+				tc.mockFn(mock)
+			}
+
+			err := usecase.Update(context.Background(), tc.input)
+			assert.Equal(t, tc.expectedErr, err)
+		})
+	}
+}

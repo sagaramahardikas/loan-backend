@@ -90,6 +90,7 @@ func TestLoanHandler_PayBilling(t *testing.T) {
 			name: "error: usecase error",
 			id:   "123",
 			input: entity.PayBillingRequest{
+				UserID: "1",
 				Amount: decimal.NewFromInt(10000),
 			},
 			mockFn: func(mocks *mockLoanHandler) {
@@ -107,6 +108,7 @@ func TestLoanHandler_PayBilling(t *testing.T) {
 			name: "success: pay billing",
 			id:   "123",
 			input: entity.PayBillingRequest{
+				UserID: "1",
 				Amount: decimal.NewFromInt(10000),
 			},
 			mockFn: func(mocks *mockLoanHandler) {

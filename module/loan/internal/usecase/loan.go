@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"example.com/loan/internal/util"
 	"example.com/loan/module/loan/entity"
 	"example.com/loan/module/loan/internal/repository"
 	"example.com/loan/module/payment/client"
@@ -26,6 +27,7 @@ type loanUsecase struct {
 	loanBillingRepo repository.LoanBillingRepository
 	repaymentRepo   repository.RepaymentRepository
 	loanRepo        repository.LoanRepository
+	clock           util.Clock
 }
 
 func (u *loanUsecase) Create(ctx context.Context, loan *entity.Loan) error {
@@ -94,7 +96,7 @@ func (u *loanUsecase) ForceDisburse(ctx context.Context, loanID string) error {
 	}
 
 	gmt7 := time.FixedZone("GMT+7", 7*60*60)
-	now := time.Now().In(gmt7)
+	now := u.clock.Now().In(gmt7)
 	var billings []entity.LoanBilling
 	for i := 0; i < loan.Term; i++ {
 		billings = append(billings, entity.LoanBilling{
@@ -113,11 +115,17 @@ func NewLoanUsecase(
 	loanBillingRepo repository.LoanBillingRepository,
 	repaymentRepo repository.RepaymentRepository,
 	loanRepo repository.LoanRepository,
+	clock util.Clock,
 ) LoanUsecase {
+	if clock == nil {
+		clock = util.RealClock{}
+	}
+
 	return &loanUsecase{
 		paymentService:  paymentService,
 		loanBillingRepo: loanBillingRepo,
 		repaymentRepo:   repaymentRepo,
 		loanRepo:        loanRepo,
+		clock:           clock,
 	}
 }

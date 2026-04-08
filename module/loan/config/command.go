@@ -17,7 +17,7 @@ func InitializeCreateLoanDependencies(cfg LoanConfig) (*CreateLoanDependencies, 
 	}
 
 	loanRepo := repository.NewLoanRepository(cfg.Database)
-	loanUsecase := usecase.NewLoanUsecase(nil, nil, nil, loanRepo)
+	loanUsecase := usecase.NewLoanUsecase(nil, nil, nil, loanRepo, nil)
 
 	return &CreateLoanDependencies{
 		Usecase: loanUsecase,
@@ -35,7 +35,7 @@ func InitializeForceDisburseLoanDependencies(cfg LoanConfig) (*ForceDisburseLoan
 
 	loanRepo := repository.NewLoanRepository(cfg.Database)
 	loanBillingRepo := repository.NewLoanBillingRepository(cfg.Database)
-	loanUsecase := usecase.NewLoanUsecase(nil, loanBillingRepo, nil, loanRepo)
+	loanUsecase := usecase.NewLoanUsecase(nil, loanBillingRepo, nil, loanRepo, nil)
 
 	return &ForceDisburseLoanDependencies{
 		Usecase: loanUsecase,

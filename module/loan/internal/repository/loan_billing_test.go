@@ -3,6 +3,7 @@ package repository_test
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"errors"
 	"regexp"
 	"testing"
@@ -173,6 +174,91 @@ func TestLoanBillingRepository_Update(t *testing.T) {
 
 			err = repo.Update(context.Background(), tc.inpObj)
 			assert.Equal(t, tc.expectedErr, err)
+		})
+	}
+}
+
+func TestLoanBillingRepository_BulkCreate(t *testing.T) {
+	fixedDate := time.Date(2024, 6, 30, 0, 0, 0, 0, time.UTC)
+
+	testCases := []struct {
+		name        string
+		inpBillings []entity.LoanBilling
+		dbExecError error
+		expectedErr error
+	}{
+		{
+			name: "error: db connection error",
+			inpBillings: []entity.LoanBilling{
+				{
+					LoanID:  "1",
+					Amount:  decimal.NewFromInt(10000),
+					Status:  entity.LoanBillingStatusCreated,
+					DueDate: fixedDate.AddDate(0, 0, 7),
+				},
+				{
+					LoanID:  "1",
+					Amount:  decimal.NewFromInt(10000),
+					Status:  entity.LoanBillingStatusCreated,
+					DueDate: fixedDate.AddDate(0, 0, 14),
+				},
+			},
+			dbExecError: errors.New("db connection error"),
+			expectedErr: errors.New("db connection error"),
+		},
+		{
+			name: "success: bulk create",
+			inpBillings: []entity.LoanBilling{
+				{
+					LoanID:  "1",
+					Amount:  decimal.NewFromInt(10000),
+					Status:  entity.LoanBillingStatusCreated,
+					DueDate: fixedDate.AddDate(0, 0, 7),
+				},
+				{
+					LoanID:  "1",
+					Amount:  decimal.NewFromInt(10000),
+					Status:  entity.LoanBillingStatusCreated,
+					DueDate: fixedDate.AddDate(0, 0, 14),
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.Nil(t, err)
+
+			repo := repository.NewLoanBillingRepository(db)
+			billingsValues := ""
+			argsValues := []driver.Value{}
+			for i := range tc.inpBillings {
+				billingsValues += "(?,?,?,?,?,?)"
+				if i < len(tc.inpBillings)-1 {
+					billingsValues += ","
+				}
+
+				argsValues = append(argsValues,
+					tc.inpBillings[i].LoanID,
+					tc.inpBillings[i].Amount,
+					tc.inpBillings[i].Status,
+					tc.inpBillings[i].DueDate,
+					sqlmock.AnyArg(),
+					sqlmock.AnyArg(),
+				)
+			}
+
+			mock.ExpectExec(regexp.QuoteMeta("INSERT INTO loan_billings (loan_id,amount,status,due_date,created_at,updated_at) VALUES " + billingsValues)).
+				WithArgs(argsValues...).
+				WillReturnResult(sqlmock.NewResult(0, 1)).
+				WillReturnError(tc.dbExecError)
+
+			err = repo.BulkCreate(context.Background(), tc.inpBillings)
+			if err != nil {
+				assert.Equal(t, tc.expectedErr, err)
+				return
+			}
 		})
 	}
 }

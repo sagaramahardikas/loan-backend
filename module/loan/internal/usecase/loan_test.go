@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"example.com/loan/internal/util"
 	"example.com/loan/module/loan/entity"
 	"example.com/loan/module/loan/internal/repository/mock"
 	"example.com/loan/module/loan/internal/usecase"
@@ -69,7 +70,7 @@ func TestLoanUsecase_GetOutstandingLoans(t *testing.T) {
 				loanRepo:      mock.NewMockLoanRepository(ctrl),
 			}
 
-			usecase := usecase.NewLoanUsecase(mock.service, mock.billingRepo, mock.repaymentRepo, mock.loanRepo)
+			usecase := usecase.NewLoanUsecase(mock.service, mock.billingRepo, mock.repaymentRepo, mock.loanRepo, nil)
 			if tc.mockFn != nil {
 				tc.mockFn(mock)
 			}
@@ -274,7 +275,7 @@ func TestLoanUsecase_PayBilling(t *testing.T) {
 				loanRepo:      mock.NewMockLoanRepository(ctrl),
 			}
 
-			usecase := usecase.NewLoanUsecase(mock.service, mock.billingRepo, mock.repaymentRepo, mock.loanRepo)
+			usecase := usecase.NewLoanUsecase(mock.service, mock.billingRepo, mock.repaymentRepo, mock.loanRepo, nil)
 			if tc.mockFn != nil {
 				tc.mockFn(mock)
 			}
@@ -286,6 +287,176 @@ func TestLoanUsecase_PayBilling(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.expectedObj, obj)
 			}
+		})
+	}
+}
+
+func TestLoanUsecase_Create(t *testing.T) {
+	loan := entity.Loan{
+		UserID:            "1",
+		Principal:         decimal.NewFromInt(100000),
+		Term:              10,
+		Interest:          0.1,
+		TotalAmount:       decimal.NewFromInt(110000),
+		WeeklyInstallment: decimal.NewFromInt(10000),
+		Status:            entity.LoanStatusProposed,
+	}
+
+	testCases := []struct {
+		name        string
+		input       entity.Loan
+		mockFn      func(mock *mockLoanUsecase)
+		expectedErr error
+	}{
+		{
+			name:  "error: db connection error",
+			input: loan,
+			mockFn: func(mocks *mockLoanUsecase) {
+				mocks.loanRepo.EXPECT().Create(
+					gomock.Any(), &loan,
+				).Return(errors.New("db connection error"))
+			},
+			expectedErr: errors.New("db connection error"),
+		},
+		{
+			name:  "success: created",
+			input: loan,
+			mockFn: func(mocks *mockLoanUsecase) {
+				mocks.loanRepo.EXPECT().Create(
+					gomock.Any(), &loan,
+				).Return(nil)
+			},
+		},
+	}
+
+	ctrl := gomock.NewController(t)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mock := &mockLoanUsecase{loanRepo: mock.NewMockLoanRepository(ctrl)}
+			usecase := usecase.NewLoanUsecase(nil, nil, nil, mock.loanRepo, nil)
+			if tc.mockFn != nil {
+				tc.mockFn(mock)
+			}
+
+			err := usecase.Create(context.Background(), &tc.input)
+			assert.Equal(t, tc.expectedErr, err)
+		})
+	}
+}
+
+func TestLoanUsecase_ForceDisburse(t *testing.T) {
+	fixedTime := time.Date(2026, 4, 8, 0, 0, 0, 0, time.FixedZone("GMT+7", 7*60*60))
+	clock := util.FixedClock{FixedTime: fixedTime}
+
+	loan := entity.Loan{
+		UserID:            "1",
+		Principal:         decimal.NewFromInt(100000),
+		Term:              2,
+		Interest:          0.1,
+		TotalAmount:       decimal.NewFromInt(110000),
+		WeeklyInstallment: decimal.NewFromInt(10000),
+		Status:            entity.LoanStatusProposed,
+	}
+
+	disbursedLoan := loan
+	disbursedLoan.Status = entity.LoanStatusDisbursed
+
+	billings := []entity.LoanBilling{
+		{
+			LoanID:  loan.ID,
+			Amount:  loan.WeeklyInstallment,
+			Status:  entity.LoanBillingStatusCreated,
+			DueDate: fixedTime.AddDate(0, 0, 7),
+		},
+		{
+			LoanID:  loan.ID,
+			Amount:  loan.WeeklyInstallment,
+			Status:  entity.LoanBillingStatusCreated,
+			DueDate: fixedTime.AddDate(0, 0, 14),
+		},
+	}
+
+	testCases := []struct {
+		name        string
+		loanID      string
+		mockFn      func(mock *mockLoanUsecase)
+		expectedErr error
+	}{
+		{
+			name:   "error: get loan error",
+			loanID: loan.ID,
+			mockFn: func(mocks *mockLoanUsecase) {
+				mocks.loanRepo.EXPECT().GetByID(
+					gomock.Any(), loan.ID,
+				).Return(entity.Loan{}, errors.New("get loan error"))
+			},
+			expectedErr: errors.New("get loan error"),
+		},
+		{
+			name:   "error: update loan error",
+			loanID: loan.ID,
+			mockFn: func(mocks *mockLoanUsecase) {
+				mocks.loanRepo.EXPECT().GetByID(
+					gomock.Any(), loan.ID,
+				).Return(loan, nil)
+
+				mocks.loanRepo.EXPECT().Update(
+					gomock.Any(), disbursedLoan,
+				).Return(errors.New("update loan error"))
+			},
+			expectedErr: errors.New("update loan error"),
+		},
+		{
+			name:   "error: loan bulk create error",
+			loanID: loan.ID,
+			mockFn: func(mocks *mockLoanUsecase) {
+				mocks.loanRepo.EXPECT().GetByID(
+					gomock.Any(), loan.ID,
+				).Return(loan, nil)
+
+				mocks.loanRepo.EXPECT().Update(
+					gomock.Any(), disbursedLoan,
+				).Return(nil)
+
+				mocks.billingRepo.EXPECT().BulkCreate(
+					gomock.Any(), billings,
+				).Return(errors.New("bulk create loan billing error"))
+			},
+			expectedErr: errors.New("bulk create loan billing error"),
+		},
+		{
+			name:   "success: bulk create",
+			loanID: loan.ID,
+			mockFn: func(mocks *mockLoanUsecase) {
+				mocks.loanRepo.EXPECT().GetByID(
+					gomock.Any(), loan.ID,
+				).Return(loan, nil)
+
+				mocks.loanRepo.EXPECT().Update(
+					gomock.Any(), disbursedLoan,
+				).Return(nil)
+
+				mocks.billingRepo.EXPECT().BulkCreate(
+					gomock.Any(), billings,
+				).Return(nil)
+			},
+		},
+	}
+
+	ctrl := gomock.NewController(t)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mock := &mockLoanUsecase{
+				billingRepo: mock.NewMockLoanBillingRepository(ctrl),
+				loanRepo:    mock.NewMockLoanRepository(ctrl),
+			}
+			usecase := usecase.NewLoanUsecase(nil, mock.billingRepo, nil, mock.loanRepo, clock)
+			if tc.mockFn != nil {
+				tc.mockFn(mock)
+			}
+
+			err := usecase.ForceDisburse(context.Background(), tc.loanID)
+			assert.Equal(t, tc.expectedErr, err)
 		})
 	}
 }

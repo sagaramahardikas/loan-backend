@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"time"
 
 	"example.com/loan/module/user/entity"
 	sq "github.com/Masterminds/squirrel"
@@ -14,6 +16,7 @@ type userRepository struct {
 
 type UserRepository interface {
 	GetByID(ctx context.Context, id string) (entity.User, error)
+	Create(ctx context.Context, user *entity.User) error
 }
 
 func (r *userRepository) GetByID(ctx context.Context, id string) (entity.User, error) {
@@ -30,6 +33,36 @@ func (r *userRepository) GetByID(ctx context.Context, id string) (entity.User, e
 	}
 
 	return user, nil
+}
+
+func (r *userRepository) Create(ctx context.Context, user *entity.User) error {
+	gmt7 := time.FixedZone("GMT+7", 7*60*60)
+	now := time.Now().In(gmt7)
+
+	query := sq.Insert("users").Columns(
+		"username",
+		"status",
+		"created_at",
+		"updated_at",
+	).Values(
+		user.Username,
+		user.Status,
+		now,
+		now,
+	)
+
+	result, err := query.RunWith(r.db).ExecContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	user.ID = fmt.Sprint(id)
+
+	return nil
 }
 
 func NewUserRepository(db *sql.DB) UserRepository {

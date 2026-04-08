@@ -17,6 +17,7 @@ type LoanBillingRepository interface {
 	GetByID(ctx context.Context, billingID string) (entity.LoanBilling, error)
 	SumOutstandingLoans(ctx context.Context, loanID string) (entity.GetOutstandingLoansResponse, error)
 	Update(ctx context.Context, billing entity.LoanBilling) error
+	BulkCreate(ctx context.Context, billings []entity.LoanBilling) error
 }
 
 func (r *loanBillingRepository) GetByID(ctx context.Context, billingID string) (entity.LoanBilling, error) {
@@ -80,6 +81,34 @@ func (r *loanBillingRepository) Update(ctx context.Context, billing entity.LoanB
 		return sql.ErrNoRows
 	}
 
+	return err
+}
+
+func (r *loanBillingRepository) BulkCreate(ctx context.Context, billings []entity.LoanBilling) error {
+	gmt7 := time.FixedZone("GMT+7", 7*60*60)
+	now := time.Now().In(gmt7)
+
+	query := sq.Insert("loan_billings").Columns(
+		"loan_id",
+		"amount",
+		"status",
+		"due_date",
+		"created_at",
+		"updated_at",
+	)
+
+	for _, billing := range billings {
+		query = query.Values(
+			billing.LoanID,
+			billing.Amount,
+			billing.Status,
+			billing.DueDate,
+			now,
+			now,
+		)
+	}
+
+	_, err := query.RunWith(r.db).ExecContext(ctx)
 	return err
 }
 

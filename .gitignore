@@ -16,6 +16,8 @@
 coverage.*
 *.coverprofile
 profile.cov
+UT-loan-backend-report_tms.*
+cobertura.xml
 
 # Dependency directories (remove the comment below to include it)
 /vendor

@@ -25,7 +25,8 @@ func RegisterLoanGatewayHandler(mux *http.ServeMux, cfg LoanConfig) error {
 	paymentClient := client.NewPaymentClient(http.DefaultClient, cfg.PaymentServiceAddress)
 	loanBillingRepo := repository.NewLoanBillingRepository(cfg.Database)
 	repaymentRepo := repository.NewRepaymentRepository(cfg.Database)
-	loanUsecase := usecase.NewLoanUsecase(paymentClient, loanBillingRepo, repaymentRepo)
+	loanRepo := repository.NewLoanRepository(cfg.Database)
+	loanUsecase := usecase.NewLoanUsecase(paymentClient, loanBillingRepo, repaymentRepo, loanRepo)
 	loanHandler := handler.NewLoanHandler(loanUsecase)
 
 	mux.HandleFunc("/loans/{id}/outstanding", loanHandler.GetOutstandingLoans())

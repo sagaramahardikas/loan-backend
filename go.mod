@@ -5,6 +5,7 @@ go 1.25.7
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/Masterminds/squirrel v1.5.4
+	github.com/alecthomas/kong v1.15.0
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/shopspring/decimal v1.4.0

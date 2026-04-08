@@ -41,6 +41,20 @@ func (m *MockUserUsecase) EXPECT() *MockUserUsecaseMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockUserUsecase) Create(ctx context.Context, user entity.User) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, user)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockUserUsecaseMockRecorder) Create(ctx, user any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserUsecase)(nil).Create), ctx, user)
+}
+
 // GetByID mocks base method.
 func (m *MockUserUsecase) GetByID(ctx context.Context, id string) (entity.User, error) {
 	m.ctrl.T.Helper()

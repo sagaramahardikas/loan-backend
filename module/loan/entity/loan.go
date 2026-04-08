@@ -19,7 +19,7 @@ type Loan struct {
 	ID                string          `json:"id"`
 	UserID            string          `json:"user_id"`
 	Principal         decimal.Decimal `json:"principal"`
-	Term              int             `json:"term"`     // in months
+	Term              int             `json:"term"`     // in weeks
 	Interest          float64         `json:"interest"` // annual interest rate
 	TotalAmount       decimal.Decimal `json:"total_amount"`
 	WeeklyInstallment decimal.Decimal `json:"weekly_installment"`

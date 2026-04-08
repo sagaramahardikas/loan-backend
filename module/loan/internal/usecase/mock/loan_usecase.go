@@ -41,6 +41,34 @@ func (m *MockLoanUsecase) EXPECT() *MockLoanUsecaseMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method.
+func (m *MockLoanUsecase) Create(ctx context.Context, loan *entity.Loan) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, loan)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockLoanUsecaseMockRecorder) Create(ctx, loan any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockLoanUsecase)(nil).Create), ctx, loan)
+}
+
+// ForceDisburse mocks base method.
+func (m *MockLoanUsecase) ForceDisburse(ctx context.Context, loanID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ForceDisburse", ctx, loanID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ForceDisburse indicates an expected call of ForceDisburse.
+func (mr *MockLoanUsecaseMockRecorder) ForceDisburse(ctx, loanID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForceDisburse", reflect.TypeOf((*MockLoanUsecase)(nil).ForceDisburse), ctx, loanID)
+}
+
 // GetOutstandingLoans mocks base method.
 func (m *MockLoanUsecase) GetOutstandingLoans(ctx context.Context, loanID string) (entity.GetOutstandingLoansResponse, error) {
 	m.ctrl.T.Helper()

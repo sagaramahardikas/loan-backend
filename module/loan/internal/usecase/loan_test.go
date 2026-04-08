@@ -21,6 +21,7 @@ type mockLoanUsecase struct {
 	service       *mockPaymentClient.MockPaymentService
 	billingRepo   *mock.MockLoanBillingRepository
 	repaymentRepo *mock.MockRepaymentRepository
+	loanRepo      *mock.MockLoanRepository
 }
 
 func TestLoanUsecase_GetOutstandingLoans(t *testing.T) {
@@ -65,9 +66,10 @@ func TestLoanUsecase_GetOutstandingLoans(t *testing.T) {
 				service:       mockPaymentClient.NewMockPaymentService(ctrl),
 				billingRepo:   mock.NewMockLoanBillingRepository(ctrl),
 				repaymentRepo: mock.NewMockRepaymentRepository(ctrl),
+				loanRepo:      mock.NewMockLoanRepository(ctrl),
 			}
 
-			usecase := usecase.NewLoanUsecase(mock.service, mock.billingRepo, mock.repaymentRepo)
+			usecase := usecase.NewLoanUsecase(mock.service, mock.billingRepo, mock.repaymentRepo, mock.loanRepo)
 			if tc.mockFn != nil {
 				tc.mockFn(mock)
 			}
@@ -269,9 +271,10 @@ func TestLoanUsecase_PayBilling(t *testing.T) {
 				service:       mockPaymentClient.NewMockPaymentService(ctrl),
 				billingRepo:   mock.NewMockLoanBillingRepository(ctrl),
 				repaymentRepo: mock.NewMockRepaymentRepository(ctrl),
+				loanRepo:      mock.NewMockLoanRepository(ctrl),
 			}
 
-			usecase := usecase.NewLoanUsecase(mock.service, mock.billingRepo, mock.repaymentRepo)
+			usecase := usecase.NewLoanUsecase(mock.service, mock.billingRepo, mock.repaymentRepo, mock.loanRepo)
 			if tc.mockFn != nil {
 				tc.mockFn(mock)
 			}

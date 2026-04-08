@@ -1,5 +1,7 @@
 .PHONY: lint lint-fix dev-dep dep test cobertura docker-dep db-migrate db-rollback start-server
 
+GO_PACKAGES ?= $(shell go list ./... | grep -v -E 'mock|config|cmd')
+
 lint:
 	go fmt ./...
 	golangci-lint run --concurrency 2 --color always --timeout 10m0s
@@ -15,6 +17,10 @@ dev-dep:
 dep:
 	go mod tidy
 	go mod vendor
+
+test:
+	go test -race -v ${GO_PACKAGES} -coverprofile=coverage.out -covermode=atomic -json > UT-loan-backend-report_tms.json
+	go tool cover -func=coverage.out
 
 docker-dep:
 	docker-compose --env-file dev/.env -f dev/docker-compose.yml up --no-recreate

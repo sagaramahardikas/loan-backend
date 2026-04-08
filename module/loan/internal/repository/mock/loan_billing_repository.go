@@ -41,6 +41,20 @@ func (m *MockLoanBillingRepository) EXPECT() *MockLoanBillingRepositoryMockRecor
 	return m.recorder
 }
 
+// BulkCreate mocks base method.
+func (m *MockLoanBillingRepository) BulkCreate(ctx context.Context, billings []entity.LoanBilling) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BulkCreate", ctx, billings)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BulkCreate indicates an expected call of BulkCreate.
+func (mr *MockLoanBillingRepositoryMockRecorder) BulkCreate(ctx, billings any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkCreate", reflect.TypeOf((*MockLoanBillingRepository)(nil).BulkCreate), ctx, billings)
+}
+
 // GetByID mocks base method.
 func (m *MockLoanBillingRepository) GetByID(ctx context.Context, billingID string) (entity.LoanBilling, error) {
 	m.ctrl.T.Helper()

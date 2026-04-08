@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -68,6 +69,55 @@ func TestAccountRepository_GetByUserID(t *testing.T) {
 			}
 
 			assert.Equal(t, tc.expectedAccount, got)
+		})
+	}
+}
+
+func TestAccountRepository_Create(t *testing.T) {
+	testCases := []struct {
+		name           string
+		inpAccount     entity.Account
+		dbExecError    error
+		lastInsertedID int64
+		expectedErr    error
+	}{
+		{
+			name:        "error: db connection error",
+			inpAccount:  entity.Account{ID: "1", UserID: "1", Balance: decimal.NewFromInt(10000), Status: entity.AccountStatusActive},
+			dbExecError: errors.New("db connection error"),
+			expectedErr: errors.New("db connection error"),
+		},
+		{
+			name:           "success: created",
+			inpAccount:     entity.Account{ID: "1", UserID: "1", Balance: decimal.NewFromInt(10000), Status: entity.AccountStatusActive},
+			lastInsertedID: 1,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			db, mock, err := sqlmock.New()
+			assert.Nil(t, err)
+
+			repo := repository.NewAccountRepository(db)
+			mock.ExpectExec(regexp.QuoteMeta("INSERT INTO accounts (user_id,balance,status,created_at,updated_at) VALUES (?,?,?,?,?)")).
+				WithArgs(
+					tc.inpAccount.UserID,
+					tc.inpAccount.Balance,
+					tc.inpAccount.Status,
+					sqlmock.AnyArg(),
+					sqlmock.AnyArg(),
+				).
+				WillReturnResult(sqlmock.NewResult(tc.lastInsertedID, 1)).
+				WillReturnError(tc.dbExecError)
+
+			err = repo.Create(context.Background(), &tc.inpAccount)
+			if err != nil {
+				assert.Equal(t, tc.expectedErr, err)
+				return
+			}
+
+			assert.Equal(t, fmt.Sprint(tc.lastInsertedID), tc.inpAccount.ID)
 		})
 	}
 }

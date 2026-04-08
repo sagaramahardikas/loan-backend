@@ -1,6 +1,6 @@
 .PHONY: lint lint-fix dev-dep dep test cobertura docker-dep db-migrate db-rollback start-server
 
-GO_PACKAGES ?= $(shell go list ./... | grep -v -E 'mock|config|cmd')
+GO_PACKAGES ?= $(shell go list ./... | grep -v -E 'mock|config|cmd|util')
 
 lint:
 	go fmt ./...

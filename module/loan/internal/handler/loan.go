@@ -39,7 +39,6 @@ func (h *LoanHandler) PayBilling() func(w http.ResponseWriter, r *http.Request) 
 		}
 
 		id := r.PathValue("id")
-		req.UserID = "1" // hardcode for now, should get from jwt token
 		req.BillingID = id
 		response, err := h.usecase.PayBilling(context.Background(), req)
 		if err != nil {

@@ -46,7 +46,7 @@ func (r *loanBillingRepository) SumOutstandingLoans(ctx context.Context, loanID 
 	).From("loan_billings").Where(
 		sq.And{
 			sq.Eq{"loan_id": loanID},
-			sq.Lt{"status": entity.LoanBillingStatusPaid},
+			sq.NotEq{"status": entity.LoanBillingStatusPaid},
 		},
 	)
 

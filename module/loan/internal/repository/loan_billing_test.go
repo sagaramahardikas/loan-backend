@@ -120,7 +120,7 @@ func TestLoanBillingRepository_SumOutstandingLoans(t *testing.T) {
 				)
 			}
 
-			mock.ExpectQuery(regexp.QuoteMeta("SELECT COALESCE(SUM(amount), 0) AS total_outstanding_amount, COUNT(id) AS total_billing_count FROM loan_billings WHERE (loan_id = ? AND status < ?)")).
+			mock.ExpectQuery(regexp.QuoteMeta("SELECT COALESCE(SUM(amount), 0) AS total_outstanding_amount, COUNT(id) AS total_billing_count FROM loan_billings WHERE (loan_id = ? AND status <> ?)")).
 				WithArgs(tc.id, entity.LoanBillingStatusPaid).
 				WillReturnRows(rows).
 				WillReturnError(tc.dbListError)

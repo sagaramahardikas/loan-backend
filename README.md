@@ -16,14 +16,31 @@ https://dbdiagram.io/d/Amartha-Loan-69c95965fb2db18e3b2e3c69
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
 ### Setup
+- Copy env.sample and if necessary, modify the env value(s)
+  ```
+  cp env.sample .env
+  cp dev/env.sample  dev/.env
+  ```
+
+- Download Go dependencies
+  ```
+  make dev-dep
+  make dep
+  ```
+
 - Spin up dependencies with docker-compose
   ```
   make docker-dep
   ```
 
 - Migrate the database
-  ```sh
+  ```
   make db-migrate
+  ```
+
+- Start the gateway server
+  ```
+  make build-and-run-server
   ```
 
 ### Local development using docker-compose

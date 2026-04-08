@@ -30,7 +30,8 @@ CREATE TABLE `loan_billings` (
   `due_date` datetime NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX `idx_loan_billings_on_loan_id_and_due_date` (`loan_id`, `due_date`)
 ) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 -- Create "repayments" table
 CREATE TABLE `repayments` (
@@ -51,7 +52,8 @@ CREATE TABLE `accounts` (
   `status` tinyint NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX `idx_accounts_on_user_id` (`user_id`)
 ) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;
 -- Create "mutations" table
 CREATE TABLE `mutations` (
@@ -62,5 +64,6 @@ CREATE TABLE `mutations` (
   `amount` decimal(10,2) NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  INDEX `idx_mutations_on_account_id_and_type_and_reference` (`account_id`, `type`, `reference`)
 ) CHARSET utf8mb4 COLLATE utf8mb4_unicode_ci;

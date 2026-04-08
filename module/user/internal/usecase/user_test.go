@@ -13,7 +13,7 @@ import (
 )
 
 type mockUserUsecase struct {
-	usecase *mock.MockUserRepository
+	repository *mock.MockUserRepository
 }
 
 func TestUserUsecase_GetByID(t *testing.T) {
@@ -34,7 +34,7 @@ func TestUserUsecase_GetByID(t *testing.T) {
 			name: "error: db connection error",
 			id:   "123",
 			mockFn: func(mocks *mockUserUsecase) {
-				mocks.usecase.EXPECT().GetByID(
+				mocks.repository.EXPECT().GetByID(
 					gomock.Any(), "123",
 				).Return(entity.User{}, errors.New("db connection error"))
 			},
@@ -44,7 +44,7 @@ func TestUserUsecase_GetByID(t *testing.T) {
 			name: "success: found",
 			id:   "123",
 			mockFn: func(mocks *mockUserUsecase) {
-				mocks.usecase.EXPECT().GetByID(
+				mocks.repository.EXPECT().GetByID(
 					gomock.Any(), "123",
 				).Return(user, nil)
 			},
@@ -56,10 +56,10 @@ func TestUserUsecase_GetByID(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			mock := &mockUserUsecase{
-				usecase: mock.NewMockUserRepository(ctrl),
+				repository: mock.NewMockUserRepository(ctrl),
 			}
 
-			usecase := usecase.NewUserUsecase(mock.usecase)
+			usecase := usecase.NewUserUsecase(mock.repository)
 			if tc.mockFn != nil {
 				tc.mockFn(mock)
 			}
@@ -71,6 +71,55 @@ func TestUserUsecase_GetByID(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.expectedUser, user)
 			}
+		})
+	}
+}
+
+func TestUserUsecase_Create(t *testing.T) {
+	user := entity.User{
+		ID:       "1",
+		Username: "testuser",
+		Status:   entity.UserStatusActive,
+	}
+
+	testCases := []struct {
+		name        string
+		input       entity.User
+		mockFn      func(mock *mockUserUsecase)
+		expectedErr error
+	}{
+		{
+			name:  "error: db connection error",
+			input: user,
+			mockFn: func(mocks *mockUserUsecase) {
+				mocks.repository.EXPECT().Create(
+					gomock.Any(), &user,
+				).Return(errors.New("db connection error"))
+			},
+			expectedErr: errors.New("db connection error"),
+		},
+		{
+			name:  "success: created",
+			input: user,
+			mockFn: func(mocks *mockUserUsecase) {
+				mocks.repository.EXPECT().Create(
+					gomock.Any(), &user,
+				).Return(nil)
+			},
+		},
+	}
+
+	ctrl := gomock.NewController(t)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mock := &mockUserUsecase{repository: mock.NewMockUserRepository(ctrl)}
+			usecase := usecase.NewUserUsecase(mock.repository)
+			if tc.mockFn != nil {
+				tc.mockFn(mock)
+			}
+
+			err := usecase.Create(context.Background(), tc.input)
+			assert.Equal(t, tc.expectedErr, err)
 		})
 	}
 }

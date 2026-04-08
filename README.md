@@ -9,7 +9,10 @@ https://dbdiagram.io/d/Amartha-Loan-69c95965fb2db18e3b2e3c69
 
 ### Prerequisite
 
+- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+- [Go 1.24.1 or later](https://golang.org/doc/install)
 - [Atlas](https://atlasgo.io/docs#installation)
+- [Docker](https://docs.docker.com/engine/install/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
 
 ### Setup
@@ -90,21 +93,33 @@ Force Disburse Loan with Loan ID 4, to trigger bulk create Loan Billing
 go run cmd/cli/main.go force-disburse-loan --loan_id=4
 ```
 
+Overdue Billing Checker to trigger update billing to overdue if the condition match and user status to delinquent if condition match
+```
+go run cmd/cli/main.go overdue-billing-checker
+```
+
 ### Get Outstanding for Certain Loan through endpoint
+
+After creating loan and force disburse it, you could see the outstanding bill for that loan
 
 Hit localhost:8888/loans/{id}/outstanding
 
 <img width="2944" height="1838" alt="image" src="https://github.com/user-attachments/assets/7070c1fc-6da3-4619-84e7-b85d5b9fa7f9" />
 
-### Get User Status to Check IsDelinquent through endpoint
-
-Hit localhost:8888/users/{id} and check status column (1: inactive, 2: active, 3: delinquent)
-
-<img width="2942" height="1824" alt="image" src="https://github.com/user-attachments/assets/a930dbf0-862b-4731-8cf1-ee5dd162d332" />
-
-
 ### Make Payment through Endpoint
+
+After Creating loan and force disburse it, you could pay the billing
 
 Hit POST localhost:8888/loans/billings/{id}/pay and make payment for that loan billing
 
 <img width="2944" height="1840" alt="image" src="https://github.com/user-attachments/assets/a9e9b249-407d-424d-8a69-df51119273ac" />
+
+### Get User Status to Check IsDelinquent through endpoint
+
+To see the delinquent status, you need to create the billings through force disburse.
+After that, change the due date for at least 2 billings before today.
+Run script/command overdue-billing-checker to trigger user status change to delinquent.
+
+Hit localhost:8888/users/{id} and check status column (1: inactive, 2: active, 3: delinquent)
+
+<img width="2942" height="1824" alt="image" src="https://github.com/user-attachments/assets/a930dbf0-862b-4731-8cf1-ee5dd162d332" />
